@@ -7,6 +7,7 @@
 #include "riscv.h"
 #include "proc.h"
 #include "defs.h"
+#include "channel.h" //added for task 1
 
 void
 initlock(struct spinlock *lk, char *name)

@@ -36,3 +36,8 @@ entry("getpid");
 entry("sbrk");
 entry("sleep");
 entry("uptime");
+#task 1 additions
+entry("channel_create");
+entry("channel_put");
+entry("channel_take");
+entry("channel_destroy");

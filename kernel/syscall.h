@@ -20,3 +20,8 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
+//Task1
+#define SYS_channel_create 22
+#define SYS_channel_put   23
+#define SYS_channel_take  24
+#define SYS_channel_destroy  25
