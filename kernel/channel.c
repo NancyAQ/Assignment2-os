@@ -45,7 +45,7 @@ channel_create(void){
             release(&c->lock);
         }  
     }
-    return -1; //went through all and couldnt create channel
+    return -1; //went through all couldnt create channel
     found:
         c->cd=allocd();
         c->state=FULL;
@@ -64,7 +64,7 @@ channel_put(int cd,int data){
         acquire(&c->lock);
         if(c->cd==cd){
             if(c->state==OCCUPIED){
-                printf("Going to sleep Zzzzzz...\n");
+                // printf("Going to sleep Zzzzzz...\n");
                 sleep(c->put_lock,&c->lock);
                 if(c->state==EMPTY){
                     release(&c->lock);
@@ -91,6 +91,7 @@ channel_put(int cd,int data){
     found:
         c->data=data;
         c->state=OCCUPIED; //it should be free to take no
+        //  wakeup(c->take_lock);//better before release or after
         release(&c->lock); //i put data and release
         wakeup(c->take_lock);
         return 0;
@@ -102,7 +103,7 @@ channel_take(int cd,uint64 data){
         acquire(&c->lock);
         if(c->cd==cd){
             if(c->state==UNOCCUPIED){
-                printf("Going to sleep Zzzzzz...\n");
+                // printf("Going to sleep Zzzzzz...\n");
                 sleep(c->take_lock,&c->lock);//placeholder until I can think of smth
                  if(c->state==EMPTY){
                     release(&c->lock);
@@ -130,6 +131,7 @@ channel_take(int cd,uint64 data){
             return -1; //could not perform copyout
         }
         c->state=UNOCCUPIED;
+        // wakeup(c->put_lock); //better before release or after
         release(&c->lock);
         wakeup(c->put_lock);
         return 0;
@@ -155,6 +157,8 @@ channel_destroy(int cd){ //need to wake up processes sleeping on this with -1
         c->data=0;
         c->references=0;
         c->state=EMPTY;
+        // wakeup(c->take_lock); //before or after release??
+        // wakeup(c->put_lock);
         release(&c->lock);
         wakeup(c->take_lock);
         wakeup(c->put_lock);

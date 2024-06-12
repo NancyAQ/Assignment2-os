@@ -350,7 +350,20 @@ exit(int status)
 
   if(p == initproc)
     panic("init exiting");
-
+  // //task 1 causes kernel trap
+  // struct channel *c;
+  // for(c=channel; c<&channel[NCHANNEL];c++){
+  //   if(!holding(&c->lock))
+  //    acquire(&c->lock);
+  //   if(c->creator->pid==p->pid){ //do i need to aquire it?
+  //     if(c->state!=EMPTY){
+  //         channel_destroy(c->cd);
+  //               }
+  //         }
+  //         if(holding(&c->lock))
+  //           release(&c->lock);
+  //     }
+  // //task 1 end
   // Close all open files.
   for(int fd = 0; fd < NOFILE; fd++){
     if(p->ofile[fd]){
@@ -374,10 +387,8 @@ exit(int status)
   wakeup(p->parent);
   
   acquire(&p->lock);
-
   p->xstate = status;
   p->state = ZOMBIE;
-
   release(&wait_lock);
 
   // Jump into the scheduler, never to return.
@@ -595,6 +606,16 @@ kill(int pid)
         // Wake process from sleep().
         p->state = RUNNABLE;
       }
+      //task 1
+      struct channel *c;
+      for(c=channel; c<&channel[NCHANNEL];c++){
+          if(c->creator->pid==p->pid){ //do i need to aquire it?
+             if(c->state!=EMPTY){
+                channel_destroy(c->cd);
+                }
+          }
+      }
+      //task 1 end
       release(&p->lock);
       return 0;
     }
