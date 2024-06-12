@@ -5,9 +5,9 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "channel.h"
 
 struct cpu cpus[NCPU];
-
 struct proc proc[NPROC];
 
 struct proc *initproc;

@@ -9,3 +9,4 @@ struct channel {
   void* put_lock;
   void* take_lock;
 };
+extern struct channel channel[NCHANNEL]; //global to destroy when parent dies or exits
