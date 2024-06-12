@@ -29,7 +29,7 @@ sys_channel_take(void)
     int cd;
     argint(0,&cd);
     uint64 data; //take as unint?
-    argaddr(0, &data);
+    argaddr(1, &data);
     return channel_take(cd,data);
 }
 

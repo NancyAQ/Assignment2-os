@@ -10,7 +10,6 @@ struct channel channel[NCHANNEL];
 struct channel *initchannel;
 int nextcd = 1;
 struct spinlock cd_lock;
-struct spinlock channel_wait_lock; //do we need this?
 int
 allocd()
 {
@@ -27,10 +26,9 @@ void
 channelinit(void){
     struct channel *c;
     initlock(&cd_lock,"nextcd");
-    initlock(&channel_wait_lock,"channel_wait_lock");
     for(c=channel; c<&channel[NCHANNEL];c++){
         initlock(&c->lock,"channel");
-        c->state=FULL;
+        c->state=EMPTY;
     }
     printf("initializing channels\n"); //small check
 }
@@ -54,7 +52,9 @@ channel_create(void){
         c->creator=myproc();
         c->references=0; //this is the correct initial val?
         int cd=c->cd;
-        release(&c->lock); //should i release it?
+        c->put_lock=0;
+        c->take_lock=0;
+        release(&c->lock); 
         return cd;
 }
 int
@@ -63,21 +63,36 @@ channel_put(int cd,int data){
     for(c=channel; c<&channel[NCHANNEL];c++){
         acquire(&c->lock);
         if(c->cd==cd){
-            if(c->state==BUSY){
-                sleep(c,&c->lock);//placeholder until I can think of smth
+            if(c->state==OCCUPIED){
+                printf("Going to sleep Zzzzzz...\n");
+                sleep(c->put_lock,&c->lock);
+                if(c->state==EMPTY){
+                    release(&c->lock);
+                    return -1;
+                }
+                goto found;
+
             }
             else{
+             if((c->state==FULL)||(c->state==UNOCCUPIED)){
                 goto found;
+                }
+             else{
+                release(&c->lock);
+                return -1;
+             }
             }
         }
         else{
             release(&c->lock);
         }  
     }
-    return -1; 
+    return -1;
     found:
-        c->state=BUSY; //when can i put  date here? busy is for taking it no?
         c->data=data;
+        c->state=OCCUPIED; //it should be free to take no
+        release(&c->lock); //i put data and release
+        wakeup(c->take_lock);
         return 0;
 }
 int
@@ -86,11 +101,22 @@ channel_take(int cd,uint64 data){
     for(c=channel; c<&channel[NCHANNEL];c++){
         acquire(&c->lock);
         if(c->cd==cd){
-            if(c->state==BUSY){
-                sleep(c,&c->lock);//placeholder until I can think of smth
+            if(c->state==UNOCCUPIED){
+                printf("Going to sleep Zzzzzz...\n");
+                sleep(c->take_lock,&c->lock);//placeholder until I can think of smth
+                 if(c->state==EMPTY){
+                    release(&c->lock);
+                    return -1;
+                }
+                goto found;
             }
             else{
-                goto found;
+                if(c->state==OCCUPIED)
+                    goto found;
+                else {
+                    release(&c->lock);
+                    return -1;
+                }
             }
         }
         else{
@@ -99,12 +125,13 @@ channel_take(int cd,uint64 data){
     }
     return -1; 
     found:
-        c->state=BUSY;
         if(data!=0 && copyout(myproc()->pagetable,data,(char *)&c->data,sizeof(c->data))<0){
-            c->state=FREE;
             release(&c->lock);
             return -1; //could not perform copyout
         }
+        c->state=UNOCCUPIED;
+        release(&c->lock);
+        wakeup(c->put_lock);
         return 0;
 }
 int 
@@ -121,11 +148,16 @@ channel_destroy(int cd){ //need to wake up processes sleeping on this with -1
     } 
     return -1; //error an invalid cd didnt find any
     delete:  // no need to free lock 
-        c->cd=0;
+    //no need to update status to deleted, cd wont be found in case of take or put and
+    //-1 will be returned
+        c->cd=0; 
         c->creator=0;
         c->data=0;
         c->references=0;
         c->state=EMPTY;
+        release(&c->lock);
+        wakeup(c->take_lock);
+        wakeup(c->put_lock);
         return 0;
 }
 
