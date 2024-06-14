@@ -594,7 +594,7 @@ kill(int pid)
         p->state = RUNNABLE;
       }
       //task 1
-    
+      channel_destroy_by_pid(p->pid);
       //task 1 end
       release(&p->lock);
       return 0;
