@@ -3,7 +3,7 @@
 #include "user/user.h"
 int isPrime(int num){ //naive checking approach
   for(int i=2;i<num;i++){
-    if((i!=num) &&(num%i==0))
+    if(((i!=num) &&(num%i==0))||(num==0))
       return 0;
   }
   return 1;
@@ -31,6 +31,7 @@ main(int argc, char *argv[])
       int generated_num=2;
       while (counter<100)
       {
+        
         if(channel_put(channel_one,generated_num)<0){
           printf("Shutting off generator pid %d\n",getpid());
             exit(-1);
@@ -61,13 +62,12 @@ main(int argc, char *argv[])
       if(fork()==0){ //printer child
         while(counter<100){
           int prime;
-          channel_take(channel_two,&prime);
-          if(prime<0){
-            exit(-1);
-          }
+          if(channel_take(channel_two,&prime)==0){
+              printf("Prime:%d Count: %d\n",prime,counter+1);
+              counter=counter+1;
+              }
           else{
-            printf("Prime:%d Count: %d\n",prime,counter+1);
-            counter=counter+1;
+            exit(-1);
           }
         }
           channel_destroy(channel_two);
