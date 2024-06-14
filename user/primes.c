@@ -8,71 +8,83 @@ int isPrime(int num){ //naive checking approach
   }
   return 1;
 }
-
+int reboot=1;
 int
 main(int argc, char *argv[])
 {
-  int counter=0; //counts number of found primes
-  char user_input[100];
-  int checkers=3; //default val is 3
-  int channel_one=channel_create();
-  // CREATING CHANNELS IN PARENT PROC
-  if(channel_one<=0){
-      exit(-1);
-    } 
-  int channel_two=channel_create();
-  if(channel_two<=0){
-      exit(-1);
-    } 
-  printf("Hi there, how many prime checkers do you want?\n");
-  checkers=atoi(gets(user_input,100));
-  printf("number of inputed checkers is %d\n",checkers);
-  if(fork()==0){ //generator
-    int generated_num=2;
-    while (counter<100)
-    {
-      if(channel_put(channel_one,generated_num)<0){
+  while(reboot){
+    int counter=0; //counts number of found primes
+    int checkers=3;
+    if(argc>1){
+      checkers=atoi(argv[1]);
+    }
+    int channel_one=channel_create();
+    // CREATING CHANNELS IN PARENT PROC
+    if(channel_one<=0){
         exit(-1);
+      } 
+    int channel_two=channel_create();
+    if(channel_two<=0){
+        exit(-1);
+      } 
+    if(fork()==0){ //generator
+      int generated_num=2;
+      while (counter<100)
+      {
+        if(channel_put(channel_one,generated_num)<0){
+          printf("Shutting off generator pid %d\n",getpid());
+            exit(-1);
+        }
+        generated_num=generated_num+1;
       }
-      generated_num=generated_num+1;
+      exit(0);
     }
-    exit(0);
-  }
-  else{ //parent process
-    for(int i=0;i<checkers;i++){
-      if(fork()==0){
-        while(counter<100){
-          int number_to_check;
-          if((channel_take(channel_one,&number_to_check)<0)&&(counter<100)){
-            exit(-1);          
-          }
-          if(isPrime(number_to_check)){
-            if((channel_put(channel_two,number_to_check)<0)&&(counter<100)){
-              exit(-1); 
+    else{ //parent process
+      for(int i=0;i<checkers;i++){
+        if(fork()==0){
+          while(counter<100){
+            int number_to_check;
+            if(channel_take(channel_one,&number_to_check)<0){
+              exit(-1);          
             }
-          }
-      }
-      }
+            if(isPrime(number_to_check)){
+              if(channel_put(channel_two,number_to_check)<0){
+                channel_destroy(channel_one);
+                printf("Shutting off checker pid %d\n",getpid());
+                exit(-1); 
+              }
+            }
+        }
+        }
 
-    }
-    if(fork()==0){ //printer child
-      while(counter<100){
-        int prime;
-        channel_take(channel_two,&prime);
-        if(prime<0){
-          exit(-1);
-        }
-        else{
-          printf("Prime:%d Count: %d\n",prime,counter+1);
-          counter=counter+1;
-        }
       }
-        exit(0);
+      if(fork()==0){ //printer child
+        while(counter<100){
+          int prime;
+          channel_take(channel_two,&prime);
+          if(prime<0){
+            exit(-1);
+          }
+          else{
+            printf("Prime:%d Count: %d\n",prime,counter+1);
+            counter=counter+1;
+          }
+        }
+          channel_destroy(channel_two);
+          printf("Shutting off printer pid %d\n",getpid());
+          exit(0);
+      }
     }
-  }
-  if(counter<100){
-      wait(0);
-  }
+    //wait for other processes to end
+  for(int p=0;p<1+checkers;p++){
+    wait(0);
+      }
+  char user_reboot[100];
+  printf("Type 1 to reboot and 0 to exit:\n");
+  reboot=atoi(gets(user_reboot,100));
+    }
   exit(0);
 }
+
+
 
