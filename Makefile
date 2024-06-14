@@ -132,6 +132,7 @@ UPROGS=\
 	$U/_primes\
 	$U/_stressfs\
 	$U/_usertests\
+	$U/_test_channels\
 	$U/_grind\
 	$U/_wc\
 	$U/_mytest\

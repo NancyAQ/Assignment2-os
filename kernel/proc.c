@@ -350,29 +350,8 @@ exit(int status)
 
   if(p == initproc)
     panic("init exiting");
-  // //task 1 causes kernel trap
-  // struct channel *c;
-  // for(c=channel; c<&channel[NCHANNEL];c++){
-  //   if(!holding(&c->lock))
-  //    acquire(&c->lock);
-  //   if(c->creator->pid==p->pid){ //do i need to aquire it?
-  //     if(c->state!=EMPTY){
-  //         channel_destroy(c->cd);
-  //               }
-  //         }
-  //         if(holding(&c->lock))
-  //           release(&c->lock);
-  //     }
-  // //task 1 end
-  // Close all open files.
-  for(int fd = 0; fd < NOFILE; fd++){
-    if(p->ofile[fd]){
-      struct file *f = p->ofile[fd];
-      fileclose(f);
-      p->ofile[fd] = 0;
-    }
-  }
-
+//task1
+  channel_destroy_by_pid(p->pid);
   begin_op();
   iput(p->cwd);
   end_op();
@@ -382,6 +361,14 @@ exit(int status)
 
   // Give any children to init.
   reparent(p);
+  // Close all open files.
+  for(int fd = 0; fd < NOFILE; fd++){
+    if(p->ofile[fd]){
+      struct file *f = p->ofile[fd];
+      fileclose(f);
+      p->ofile[fd] = 0;
+    }
+  }
 
   // Parent might be sleeping in wait().
   wakeup(p->parent);
@@ -607,14 +594,7 @@ kill(int pid)
         p->state = RUNNABLE;
       }
       //task 1
-      struct channel *c;
-      for(c=channel; c<&channel[NCHANNEL];c++){
-          if(c->creator->pid==p->pid){ //do i need to aquire it?
-             if(c->state!=EMPTY){
-                channel_destroy(c->cd);
-                }
-          }
-      }
+    
       //task 1 end
       release(&p->lock);
       return 0;
