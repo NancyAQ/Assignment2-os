@@ -83,7 +83,7 @@ main(int argc, char *argv[])
     wait(0);
       }
   char user_reboot[100];
-  sleep(1); //to insure clear reboot instruction
+  sleep(2); //to insure clear reboot instruction
   printf("Type 1 to reboot and 0 to exit:\n");
   reboot=atoi(gets(user_reboot,100));
     }

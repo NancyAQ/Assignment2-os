@@ -1,4 +1,4 @@
-enum channel_status { EMPTY,FULL,DELETED,OCCUPIED,UNOCCUPIED}; //will see if i need more
+enum channel_status { EMPTY,FULL,OCCUPIED,UNOCCUPIED}; //will see if i need more
 struct channel {
   struct spinlock lock;
   enum channel_status state; //channel state
