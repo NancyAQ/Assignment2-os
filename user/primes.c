@@ -88,6 +88,7 @@ main(int argc, char *argv[])
   reboot=atoi(gets(user_reboot,100));
     }
   exit(0);
+  
 }
 
 
