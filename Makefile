@@ -135,6 +135,7 @@ UPROGS=\
 	$U/_test_channels\
 	$U/_grind\
 	$U/_wc\
+	$U/_rprime\
 	$U/_mytest\
 	$U/_zombie\
 

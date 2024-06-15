@@ -11,4 +11,4 @@
 #define NBUF         (MAXOPBLOCKS*3)  // size of disk block cache
 #define FSSIZE       2000  // size of file system in blocks
 #define MAXPATH      128   // maximum file path name
-#define NCHANNEL     2 //maximum number of channels for task1
+#define NCHANNEL     3 //maximum number of channels for task1
