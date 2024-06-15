@@ -78,12 +78,11 @@ main(int argc, char *argv[])
           exit(0);
       }
     }
-    //wait for other processes to end
-  for(int p=0;p<1+checkers;p++){
+    //wait for all children processes to end
+  for(int p=0;p<2+checkers;p++){
     wait(0);
       }
   char user_reboot[100];
-  sleep(2); //to insure clear reboot instruction
   printf("Type 1 to reboot and 0 to exit:\n");
   reboot=atoi(gets(user_reboot,100));
     }
