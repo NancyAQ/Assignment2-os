@@ -29,30 +29,33 @@ main(int argc, char *argv[])
       } 
     if(fork()==0){ //generator
       int generated_num=2;
-      while (counter<100)
+      int gen=1;
+      while (gen)
       {
         
         if(channel_put(channel_one,generated_num)<0){
-          printf("Shutting off generator pid %d\n",getpid());
-            exit(-1);
+          gen=0;
         }
         generated_num=generated_num+1;
       }
+      printf("GENERATOR %d OFF\n",getpid());
       exit(0);
     }
     else{ //parent process
       for(int i=0;i<checkers;i++){
         if(fork()==0){
-          while(counter<100){
+          int on=1;
+          while(on){
             int number_to_check;
             if(channel_take(channel_one,&number_to_check)<0){
               exit(-1);          
             }
             if(isPrime(number_to_check)){
               if(channel_put(channel_two,number_to_check)<0){
+                on=0;
+                printf("CHECKER: %d OFF\n",getpid());
                 channel_destroy(channel_one);
-                printf("Shutting off checker pid %d\n",getpid());
-                exit(-1); 
+                exit(0); 
               }
             }
         }
@@ -70,8 +73,8 @@ main(int argc, char *argv[])
             exit(-1);
           }
         }
+          printf("PRINTER OFF:%d\n",getpid());
           channel_destroy(channel_two);
-          printf("Shutting off printer pid %d\n",getpid());
           exit(0);
       }
     }
@@ -80,6 +83,7 @@ main(int argc, char *argv[])
     wait(0);
       }
   char user_reboot[100];
+  sleep(1); //to insure clear reboot instruction
   printf("Type 1 to reboot and 0 to exit:\n");
   reboot=atoi(gets(user_reboot,100));
     }
