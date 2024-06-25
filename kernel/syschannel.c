@@ -30,7 +30,7 @@ sys_channel_take(void)
     argint(0,&cd);
     uint64 data; //take as unint?
     argaddr(1, &data);
-    return channel_take(cd,data);
+    return channel_take(cd,(int*)data);
 }
 
 uint64

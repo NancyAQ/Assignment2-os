@@ -190,7 +190,7 @@ void            virtio_disk_intr(void);
 void            channelinit(void);
 int             channel_create(void);
 int             channel_put(int,int);
-int             channel_take(int,uint64); //correct params?
+int             channel_take(int,int*); //correct params?
 int             channel_destroy(int);
 void             channel_destroy_by_pid(int pid);//place holder
 

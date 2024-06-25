@@ -51,7 +51,7 @@ channel_create(void){
         c->state=FULL;
         c->creator=myproc();
         c->parent_pid=myproc()->pid;
-        c->references=0; //this is the correct initial val?
+        c->references=0; //this is the correct initial val
         int cd=c->cd;
         c->put_lock=0;
         c->take_lock=0;
@@ -98,7 +98,7 @@ channel_put(int cd,int data){
         return 0;
 }
 int
-channel_take(int cd,uint64 data){
+channel_take(int cd,int* data){
     struct channel *c;
     for(c=channel; c<&channel[NCHANNEL];c++){
         acquire(&c->lock);
@@ -128,7 +128,7 @@ channel_take(int cd,uint64 data){
     }
     return -1; 
     found:
-        if(data!=0 && copyout(myproc()->pagetable,data,(char *)&c->data,sizeof(c->data))<0){
+        if(data!=0 && copyout(myproc()->pagetable,(uint64)data,(char *)&c->data,sizeof(c->data))<0){
             release(&c->lock);
             return -1; //could not perform copyout
         }

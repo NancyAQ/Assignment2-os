@@ -1,6 +1,7 @@
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
+int reboot=1;
 int isPrime(int num){ //naive checking approach
   for(int i=2;i<num;i++){
     if(((i!=num) &&(num%i==0))||(num==0))
@@ -8,7 +9,7 @@ int isPrime(int num){ //naive checking approach
   }
   return 1;
 }
-int reboot=1;
+
 int
 main(int argc, char *argv[])
 {
@@ -18,8 +19,8 @@ main(int argc, char *argv[])
     if(argc>1){
       checkers=atoi(argv[1]);
     }
-    int channel_one=channel_create();
     // CREATING CHANNELS IN PARENT PROC
+    int channel_one=channel_create();
     if(channel_one<=0){
         exit(-1);
       } 
@@ -32,7 +33,6 @@ main(int argc, char *argv[])
       int gen=1;
       while (gen)
       {
-        
         if(channel_put(channel_one,generated_num)<0){
           gen=0;
         }
