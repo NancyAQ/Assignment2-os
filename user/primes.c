@@ -86,6 +86,8 @@ main(int argc, char *argv[])
   printf("Type 1 to reboot and 0 to exit:\n");
   reboot=atoi(gets(user_reboot,100));
     }
+  sleep(1);
+  printf("Bye bye...\n");
   exit(0);
   
 }
